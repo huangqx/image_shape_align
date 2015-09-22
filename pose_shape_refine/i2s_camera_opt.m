@@ -2,7 +2,8 @@ function [Camera_opt] = i2s_camera_opt(...
     targetPC_2D,... % the feature edge points extracted in the natural object
     sourcePC_3D,... % the corresponding 3D points
     weights,... % the weights of the correspondences
-    Camera_init) %pc_3d is fixed, pc_2d is lifted
+    Camera_init,...
+    Para) 
 
 axis_z = Camera_init.origin - Camera_init.lookAt;
 viewDis = norm(axis_z); % ViewDistance

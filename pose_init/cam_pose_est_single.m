@@ -1,4 +1,5 @@
-function [Camera] = cam_pose_est_single(Image, Shapes, Para, verbose)
+function [Camera] = cam_pose_est_single(Image, Shapes, Cameras, hogRender,...
+    Para, verbose)
 % Estimate the camera pose of the input images given the shapes
 % Image: the input image object
 % Shapes: a cell array that stores all the shape objects
@@ -16,7 +17,6 @@ function [Camera] = cam_pose_est_single(Image, Shapes, Para, verbose)
 if verbose == 1
     fprintf('Sampling cameras...\n');
 end
-[Cameras] = cam_camera_sampling(Para);
 
 if verbose == 1
     fprintf('Render shapes and compute desctiptors...\n');
@@ -29,7 +29,6 @@ dimHog = Para.gridHog(1)*Para.gridHog(2)*Para.numOrients*4;
 imageDims = Para.gridHog*60;
 
 %
-[hogRender] = cam_shape_hog_dess(Shapes, Cameras, Para, verbose);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Compute hog descriptors for the input images
