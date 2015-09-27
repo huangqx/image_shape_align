@@ -98,6 +98,7 @@ for iter = 1:Para.numIterations_non_rigid
     % Generate the Gaussian-Newton approximant of the quadratic energy
     H = J'*W*J;
     g = J'*W*r;
+    
 %    fprintf(' object_val = %f.\n', r'*W*r);
     % Add the smoothness term to the formulation
     [H_regu, g_regu] = deform_regu_term(Shape_FFD.H_smooth,...
@@ -120,21 +121,44 @@ for iter = 1:Para.numIterations_non_rigid
     % Perform linearly constrained optimization to obtain the optimal
     % displacement
     x = quad_prog(H, g, A, b_shift);
-    if norm(x) > 100
-        break;
-    end
     
-    Var.s = Var.s;
-    Var.f = Var.f + x(1);
-    Var.o = Var.o + x(5:7);
-    C = [0, -x(4), x(3);
-        x(4), 0, -x(2);
-        -x(3), x(2), 0];
-    Var.R = normalize_rot(expm(C)*Var.R);
-    dP = reshape(x(8:(3*numCtrl+7)), [numCtrl, 3])';
-    Var.ctrlPos_opt = Var.ctrlPos_opt + dP;
-    if norm(x) < 1e-6
-        break
+    % Perform line search to find the optimal solution
+    % Calculate the bejective function at the previous iteration
+    energy = r'*W*r + obj_val_regu(Shape_FFD.H_smooth,...
+        Shape_FFD.ctrlPos_ori,...
+        Var.ctrlPos_opt,...
+        Para.lambda_1st,...
+        Para.lambda_smooth);
+    
+    alpha = 1;
+    succces = 0;
+    for searchIter = 1:10
+        Var1.s = Var.s;
+        Var1.f = Var.f + x(1)*alpha;
+        Var1.o = Var.o + x(5:7)*alpha;
+        C = [0, -x(4), x(3);
+            x(4), 0, -x(2);
+            -x(3), x(2), 0]*alpha;
+        Var1.R = normalize_rot(expm(C)*Var.R);
+        dP = reshape(x(8:(3*numCtrl+7)), [numCtrl, 3])';
+        Var1.ctrlPos_opt = Var.ctrlPos_opt + dP*alpha;
+    
+        % Calculate the distance after displacing the shapes
+        e = obj_val(targetPC_2D, W, Var1, ffd_coeff_sourcePC);
+        e = e + obj_val_regu(Shape_FFD.H_smooth,...
+            Shape_FFD.ctrlPos_ori,...
+            Var1.ctrlPos_opt,...
+            Para.lambda_1st,...
+            Para.lambda_smooth);
+        if e < energy
+            Var = Var1;
+            succces = 1;
+            break;
+        end
+        alpha = alpha/2;
+    end
+    if succces == 0
+        break;
     end
 end
 
@@ -173,7 +197,8 @@ B(1:m1, 1:n1) = Shape_FFD.Ax;
 B(m1+(1:m2), n1+(1:n2)) = Shape_FFD.Ay;
 B(m1+m2+(1:m3), n1+n2+(1:n3)) = Shape_FFD.Az;
 
-function [H_regu, g_regu] = deform_regu_term(H_smooth, ctrlPos_ori, ctrlPos_cur,...
+function [H_regu, g_regu] = deform_regu_term(...
+    H_smooth, ctrlPos_ori, ctrlPos_cur,...
     lambda_1, lambda_2)
 
 nP = size(ctrlPos_ori, 2);
@@ -183,6 +208,14 @@ H_regu = zeros(3*nP+8,3*nP+8);
 g_regu = zeros(3*nP+8,1);
 H_regu(9:(8+3*nP),9:(8+3*nP)) = kron(eye(3), full(H));
 g_regu(9:(8+3*nP)) = reshape(g, [3*nP,1]);
+
+function [e_regu] = obj_val_regu(...
+    H_smooth, ctrlPos_ori, ctrlPos_cur,...
+    lambda_1, lambda_2)
+
+e1 = sum(sum((ctrlPos_ori-ctrlPos_cur).*(ctrlPos_ori-ctrlPos_cur)));
+e2 = sum(diag(ctrlPos_cur*H_smooth*ctrlPos_cur'));
+e_regu = lambda_1*e1 + lambda_2*e2;
 
 function [x] = quad_prog(H,g, A, b)
 % solve the following linearly constrained optimization problem
@@ -195,3 +228,19 @@ t = [g;b];
 x = TP\t;
 x = x(1:size(H,1));
 
+function [e] = obj_val(targetPC_2D, W, Var, ffd_coeff_sourcePC)
+
+sourcePC_3D = Var.ctrlPos_opt*ffd_coeff_sourcePC';
+numP = size(sourcePC_3D, 2);
+
+% Apply the camera parameter to obtain the 2D location
+P_bar = Var.R*(sourcePC_3D - Var.o*ones(1,numP));
+P_hat(1,:) = Var.f*P_bar(1,:)./(Var.f - P_bar(3,:));
+P_hat(2,:) = Var.f*P_bar(2,:)./(Var.f - P_bar(3,:));
+P_hat = P_hat/Var.s;
+    
+%
+r = zeros(2*numP, 1);
+r(1:2:(2*numP)) = P_hat(1,:)'- targetPC_2D(1,:)';
+r(2:2:(2*numP)) = P_hat(2,:)'- targetPC_2D(2,:)';
+e = r'*W*r;

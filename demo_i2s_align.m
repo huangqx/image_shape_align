@@ -1,4 +1,4 @@
-function [Camera_opt, Shape_opt] = demo_i2s_align(Image, Shapes, Para)
+function [Camera_opt, Shape_opt] = demo_i2s_align(Image, Shapes, Para, verbose)
 
 % Pre-compute hog descriptors of rendered images
 Cameras = cam_camera_sampling(Para); % camera simulation
