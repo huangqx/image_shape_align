@@ -1,8 +1,12 @@
-This software implements a simple image-shape alignment algorithm
+This software provides a package for joint image-shape analyasis and reconstruction
+
 It uses two external libraries from 
 Piotr's Image & Video Matlab Toolbox
 http://vision.ucsd.edu/~pdollar/toolbox/doc/
 http://research.microsoft.com/en-us/downloads/389109f6-b4e8-404c-84bf-239f7cbf4e3d/
+
+as well as the SIFT flow package
+http://people.csail.mit.edu/celiu/SIFTflow/
 
 HOG descriptor: functions 'imResample', 'hog'
 Edge Map: function 'edgesDetect'
