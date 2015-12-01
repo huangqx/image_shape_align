@@ -21,6 +21,9 @@ load('data\car.mat');
 % Load the parameters
 load('data\parameters.mat');
 
+% update Para on a new screen, takes about 10 mins
+Para = update_para(Para);
+
 % Perform image-shape alignment for one image. It selects a cloest shape, deform it to fit the image object
 [Camera_opt, Shape_opt] = demo_i2s_align(Images{1}, Shapes, Para);
 
