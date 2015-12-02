@@ -1,91 +1,90 @@
-function [SymPart] = part_symmetry_detection(Shape)
+function [sym_pairs, nonsym_ids] = part_symmetry_detection(Shape)
 % This function detects the symmetry relations among parts (disconnected
 % components)
 % 
 Shape = normalize_shape(Shape);
 
-%
-numParts = max(Shape.meshes);
-
-off = 0;
-for partId = 1 : numParts
-    faceIds = find(shape.partIds == partId);
-    if length(faceIds) >= 2
-        off = off + 1;
-        [mesh, frame] = extract_shape_part(shape, faceIds);
-        parts{off}.mesh = mesh;
-        parts{off}.frame = frame;
-        posY(off) = frame.center(2);
-    end
+% Compute the coordinate system of each part
+numParts = length(Shape.meshes);
+for i = 1:length(Shape.meshes)
+    part_frames{i} = first_order_moment(Shape, Shape.meshes{i});
 end
-[s, ids] = sort(posY);
-parts = parts(ids);
-parts1 = parts;
 
-numParts = length(parts);
+%
+nonsym_ids = [];
+sym_pairs = [];
 flags = ones(1, numParts);
-parts_pairs = [];
-parts_non_pairs = [];
-
-for partId = 1 : numParts
-    if partId == 12
-        h = 10;
-    end
-    if flags(partId) == 0
+for  i = 1 : numParts
+    if flags(i) == 0
         continue;
     end
-    part = parts{partId};
-    if abs(part.frame.center(1)) < 3e-2
-        parts_non_pairs{length(parts_non_pairs)+1} = part;
+    minDif = 10;
+    reflect_partId = -1;
+    for j = (i+1):numParts
+        if flags(j) == 0
+            continue;
+        end
+        sizeDif = part_frames{i}.pca - part_frames{j}.pca;
+        posDif = (part_frames{i}.center - part_frames{j}.center);
+        posDif(1) = (part_frames{i}.center(1) + part_frames{j}.center(1))/2;
+        dif = sqrt(sizeDif'*sizeDif + posDif'*posDif);
+        if dif < minDif
+            minDif = dif;
+            reflect_partId = j;
+        end
+    end
+    if minDif < 3e-2 && abs(part_frames{i}.center(1)) > 2e-2
+        flags(reflect_partId) = 0;
+        flags(i) = 0;
+        sym_pairs = [sym_pairs, [i; reflect_partId]];
     else
-        tp = 0;
-        for j = (partId+1):numParts
-            part1 = parts{j};
-            d1 = part1.frame.center(1) + part.frame.center(1);
-            d2 = part1.frame.center(3) - part.frame.center(3);
-            d3 = part1.frame.center(2) - part.frame.center(2);
-            if abs(d1) < 3e-2 && abs(d2) < 3e-2 & abs(d3) < 3e-2
-                flags(j) = 0;
-                if j == 12
-                    h = 10;
-                end
-                parts_pairs{length(parts_pairs)+1} = part;
-                tp = 1;
-                break;
-            end
-        end
-        if tp == 0
-            parts_non_pairs{length(parts_non_pairs)+1} = part;
-        end
+        nonsym_ids = [nonsym_ids, i];
     end
 end
 
-%for i = 1:length(parts_pairs)
-%  save2obj(parts_pairs{i}.mesh, sprintf('E:\\%d.obj', i));
-%end
 
-%for i = 1:length(parts_non_pairs)
-%  save2obj(parts_non_pairs{i}.mesh, sprintf('E:\\%d.obj', i+length(parts_pairs)));
-%end
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Compute the first-order moment of a part
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [frame] = first_order_moment(Shape, mesh)
 
+vertexPoss = Shape.vertexPoss(:, mesh.vertexIds);
 
-function [frame] = extract_shape_part(Shape, mesh)
-% Compute the frame of a shape part
-    
-numVertices = size(shape.vertexPoss, 2);
-flags = zeros(1, numVertices);
+m0 = 0;
+m1 = zeros(3,1);
+M2 = zeros(3,3);
 
-flags(shape.faceVIds(:, faceIds)) = 1;
-ids = find(flags > 0);
-flags(ids) = 1:length(ids);
+for fId = 1 : size(mesh.faceVIds, 2)
+    v1 = vertexPoss(:, mesh.faceVIds(1, fId));
+    v2 = vertexPoss(:, mesh.faceVIds(2, fId));
+    v3 = vertexPoss(:, mesh.faceVIds(3, fId));
+    a = norm(cross(v2-v1, v3-v1));
+    V = [v1, v2, v3]';
+    S = [2,1,1;1,2,1;1,1,2]/24;
+    C = a*V'*S*V;
+    M2 = M2 + C;
+    m1 = m1 + (v1+v2+v3)*a/6;
+    m0 = m0 + a/2;
+end
 
-mesh.vertexPoss = shape.vertexPoss(:, ids);
-mesh.faceVIds = flags(shape.faceVIds(:,faceIds));
-[frame] = sp_comp_part_frame(mesh);
+frame.center = m1/m0;
 
-nv = size(mesh.vertexPoss, 2);
-mesh.vertexPoss = frame.axis'*(mesh.vertexPoss - frame.center*single(ones(1,nv)));
+M2 = M2/m0;
+m1 = m1/m0;
+M2 = M2 - m1*m1';
 
+[U,V] = eig(M2);
+[s,ids] = sort(diag(V));
+U = U(:, ids);
+V = V(ids, ids);
+frame.pca = sqrt(diag(V));
+frame.axis = U;
+frame.center = m1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Normalize the shape so that the center of the bounding box is at the
+% origin, and the diagonal length of the bounding box is 1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [Shape] = normalize_shape(Shape_unnor)
 
 %Normalize shape
