@@ -53,7 +53,7 @@ if Shape.has_material == 0
     [image, map] = frame2im(F);
     close(hFig);
 else
-    li = 0.5;
+    li = 0.7;
 
     hFig = figure('visible', 'off');
     set(hFig, 'Position', [1 1 Camera.nWidth Camera.nHeight]);
