@@ -1,4 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+﻿%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % License and attribution:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -131,9 +131,14 @@ ACM Transactions on Graphics 34(4), 2015
   The SIFT flow package:
   http://people.csail.mit.edu/celiu/SIFTflow/
 
+  The OPENGM2 structure predication package:
+  http://hci.iwr.uni-heidelberg.de/opengm2/?l0=library
+
   HOG descriptor: functions 'imResample', 'hog'
 
   Edge map: function 'edgesDetect'
+
+  OPENGM2: the trws algorithm
 
 References:
 
@@ -142,3 +147,5 @@ Navneet Dalal, Bill Triggs: Histograms of Oriented Gradients for Human Detection
 Piotr Dollár, C. Lawrence Zitnick: Fast Edge Detection Using Structured Forests. IEEE Trans. Pattern Anal. Mach. Intell. 37(8): 1558-1570 (2015)
 
 Ce Liu, Jenny Yuen, Antonio Torralba: SIFT Flow: Dense Correspondence across Scenes and Its Applications. IEEE Trans. Pattern Anal. Mach. Intell. 33(5): 978-994 (2011)
+
+Andres, B. and Beier T. and Kappes, J.H. : OpenGM: A C++ Library for Discrete Graphical Models. http://arxiv.org/abs/1206.0111
