@@ -1,7 +1,9 @@
 This software provides a package provides several modules for joint analysis of image and shape collections
 
-% Load the parameters
-load('data\parameters.mat');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Load the parameters, data format
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  load('data\parameters.mat');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Attention: The rendering set in Para (i.e., Para.rHeights, 
@@ -9,12 +11,54 @@ load('data\parameters.mat');
 % linux or Mac, please call the following function to update 
 % these two vectors:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Para = update_para(Para);
+  Para = update_para(Para);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Load the data/image data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  load('data\car.mat');
+  Note that the shapes are assumed to be consistently oriented in 
+  a world coordinate system
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Module I: Pose estimation
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  The pose estimation module predicts the camera pose for the 
+  underlying object with respect to the world coordinate system  
+  of the shapes. This is done by sampling the camera poses, 
+  rendering the shapes from the camera poses, and compring real 
+  images to rendered images. Note that the most time-consuming 
+  part is image rendering, and this is done by pre-computation.
 
+  Cameras = cam_camera_sampling(Para); % camera simulation
+  hogRender = cam_shape_hog_dess(...   %
+                Shapes,...  % The aligned input shapes
+                Cameras,... % The sampled camera poses
+                Para,...    % Please refer to the function body
+                verbose);   % verbose = 1 if you want to print it 
+                              out
+
+
+  Camera estimation can be done in two ways, i.e., per image in 
+  isolation or jointly among a collection of images
+  
+  Camera_init = cam_pose_est_single(...
+                  Image,...     % The input image object
+                  Shapes,...    % The aligned input shapes
+                  Cameras,...   % The sampled camera poses
+                  hogRender,... % The rendered hog descriptors
+                  Para,...  % Please refer to the function body
+                  verbose); % verbose = 1 if you want to print it 
+                              out
+  
+  Cameras_init = cam_pose_est_joint(...
+                  inputImages,...  % The input images
+                  Shapes,...       % The aligned input shapes
+                  cameraSamples,...% The sampled camera poses
+                  hogRender,...    % The rendered hog descriptors
+                  Para,...   % Please refer to the function body
+                  verbose)   % verbose = 1 if you want to print 
+                               it out
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Module II: Pair-wise Image Shape Alignment
@@ -34,7 +78,6 @@ Para = update_para(Para);
   'Shape_opt' : The optimized shape, which aligns with the input  
                 image object
   'Camera_opt': The associated optimized camera configuration
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -105,8 +148,9 @@ Para = update_para(Para);
 
   HOG descriptor: functions 'imResample', 'hog'
   Edge Map: function 'edgesDetect'
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%
+% Citation:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
