@@ -106,7 +106,8 @@ This software provides a package provides several modules for joint analysis of 
     'Camera_opt': The associated optimized camera configuration
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Module IV: Joint Image-Shape Correspondence
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Module IV: Joint Image-Shape Correspondence
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   Joint image-shape correspondence module estimates dense pixel-  
   wise correspondences among a collection of images and a   
@@ -135,7 +136,8 @@ This software provides a package provides several modules for joint analysis of 
            module wisely.
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% External libraries
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% External libraries
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   The software package uses the following external libraries:
 
