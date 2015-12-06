@@ -79,14 +79,31 @@ dif = hogInput*single(ones(1, numShapes)) - hogThisView;
 Camera = Cameras{bestCameraId};
 [s, closetShapeId] = min(sum(dif.*dif));
 Camera.closetShapeId = closetShapeId;
+
+% Set the camera
+Camera.nHeight_inner = size(Image.im, 1);
+Camera.nWidth_inner = size(Image.im, 2);
+tp = find(Para.rHeights == Camera.nHeight_inner);
+Camera.nHeight = tp(1);
+tp = find(Para.rWidths == Camera.nWidth_inner);
+Camera.nWidth = tp(1);
+
+
+im11 = cam_crop_image(Image.im);
+im2 = cam_render_shape(Shapes{closetShapeId}, Camera);
+im21 = cam_crop_image(im2);
+[m1, n1, k] = size(im11);
+[m2, n2, k] = size(im21);
+s1 = norm([m1, n1]);
+s2 = norm([m2, n2]);
+Camera.scale = Camera.scale*(s2/s1);
 if verbose == 1
-    im1 = Image.im;
     im2 = cam_render_shape(Shapes{closetShapeId}, Camera);
-    im2 = cam_crop_image(im2);
-    [im] = stitch_image(im1, im2);
+    [im] = stitch_image(Image.im, im2);
     figure(1);
     imshow(im);
 end
+
 
 function [im] = stitch_image(im1, im2)
 [m1,n1,k] = size(im1);
