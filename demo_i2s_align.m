@@ -6,7 +6,7 @@ hogRender = cam_shape_hog_dess(Shapes, Cameras, Para, verbose);
 
 
 % Initialize the camera parameter
-Camera_init = cam_pose_est_single(Image, Shapes, Cameras, hogRender, Para, 1);
+Camera_init = cam_pose_est_single(Image, Shapes, Cameras, hogRender, Para, verbose);
 
 % Perform the image shape alignment
 [Camera_opt, Shape_opt] = i2s_pose_shape_refine(Image,...
