@@ -53,7 +53,7 @@ for iter = 1:Para.numIterations
         Camera_opt,...
         Para);
     
-    if 1 % Used for debugging
+    if 0 % Used for debugging
         hFig = figure(1);
         imshow((im2double(Image.im) + im2double(render_image))/2);
         close(hFig);
