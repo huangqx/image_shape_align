@@ -1,21 +1,9 @@
-function [Match] = real_2_render_dense_corres(Image, Shape,...
-    Camera)
-% This dense correspondences between a real image and rendered images
-% Note that in the siggraph paper, this is determined among a collection of
-% images and shapes jointly. Please refer to the image_shape_corres package
-% for details on a more advanced version
-% Input arguments: 
-%   Image: The input image object
-%   Shape: The shape to be matched
-%   Camera: The camera configuration for rendering images
-
-% Render the image 
-image = i2s_render_shape(Shape, Camera);
+function [renderImage, pixelPartIds, meshPoints] = mm_render_shape(Shape, Camera)
+% Assuming that the Shape consists of a set of parts, this function render
+% the shape from the given camera configuration 
+% Render the shape using the camera configuration
+renderImage = i2s_render_shape(Shape, Camera);
 % Compute sift flows
-
-
-% Compute sift-flow
-
 
 % Rectify the camera
 axis_z = Camera.origin  - Camera.lookAt;
@@ -48,7 +36,7 @@ end
 
 meshPoints = unproject(double(Shape.vertexPoss), double(Shape.faceVIds),...
     Camera.origin, points);
-pixelIds = find(meshPoints(4,:) < 10);
+pixelIds = find(meshPoints(4,:) < 1e5);
 
-pixelFaceIds = zeros(Height, Width);
-pixelFaceIds(pixelIds) = facePartIds(meshPoints(1, pixelIds));
+pixelPartIds = zeros(Height, Width);
+pixelPartIds(pixelIds) = facePartIds(meshPoints(1, pixelIds));

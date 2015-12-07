@@ -13,27 +13,7 @@ function [Shape_opt, Camera_opt] = demo_ibm_mix_and_match(...
 %                estimation module
 %   Shapes:      The input shapes (which are consistently aligned in a
 %                world coordinate system) 
-%   Para:        The input parameters
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Used in computing part correspondence structures
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Para.
-%   Para.
-%   Para.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Used in part retrieval
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Para.
-%   Para.
-%   Para.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Used in refining shape reconstructions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%   Para.
-%   Para.
-%   Para.
+%   Para:        The input parameters (see for details)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Output arguments:
@@ -44,8 +24,26 @@ function [Shape_opt, Camera_opt] = demo_ibm_mix_and_match(...
 % Optimize part-base correspondences between the input image and the input
 % shapes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-partCorresStructs = image2shape_dense_corres(Image, Camera_init,...
-    Shapes, Para); 
+if 1
+    % Opt to do image-shape alignment to bring the rendered image close 
+    % to the image object (this is always recommended, albeit it takes
+    % longer time.
+    for i = 1:length(Shapes)
+        [ShapeCameras{i}, Shapes{i}] = i2s_pose_shape_refine(...
+            Image, Shapes{i}, Camera_init, Para);
+    end
+else
+    % For efficiency, we can always use the one obtained from pose estimation
+    for i = 1:length(Shapes)
+        ShapeCameras{i} = Camera_init;
+    end
+end
+
+% Compute part-wise dense correspondences
+for i = 1:length(Shapes)
+    partCorresStructs{i} = image2shape_dense_corres(Image,...
+        Shapes{i}, ShapeCameras{i}, Para); 
+end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Perform part-based assembly to obtain an initial reconstruction
