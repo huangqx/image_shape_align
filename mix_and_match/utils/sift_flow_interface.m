@@ -30,7 +30,7 @@ if using_patch ~= 1
     SIFTflowpara.nIterations = 30;
 
 
-    [Match.flow_12_row, Match.flow_12_col, energylist] =...
+    [Match.flow_12_col, Match.flow_12_row, energylist] =...
         SIFTflowc2f(sift1, sift2, SIFTflowpara);
     
     Match.flow_12_col(find(Match.flow_12_col > max_offset)) = max_offset;

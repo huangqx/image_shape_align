@@ -54,7 +54,7 @@ for iter = 1:Para.numIterations_rigid
     
     A = J'*W*J;
     b = J'*W*g;
-    x = (A(2:8,2:8)+eye(7)*5e-2)\b(2:8);
+    x = (A(2:8,2:8)+eye(7)*2e-2)\b(2:8);
   
     if norm(x) < 1e-6
         break
