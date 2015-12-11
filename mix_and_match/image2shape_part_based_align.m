@@ -17,3 +17,4 @@ function [Shape_opt, Camera_opt] = image2shape_part_based_align(...
 %   Camera_opt: The associated optimized camera configuration
 Shape_opt = Shape_init;
 Camera_opt = Camera_init;
+

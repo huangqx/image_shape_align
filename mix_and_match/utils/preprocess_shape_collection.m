@@ -12,10 +12,10 @@ end
 % Aligning stage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Default aligning parameters
-Para_align.gridRes = 0.1500;
+Para_align.gridRes = 0.1200;
 Para_align.numSamples = 8192;
-Para_align.lambda_first = 0.2500;
-Para_align.lambda_smooth = 2.5000;
+Para_align.lambda_first = 0.200;
+Para_align.lambda_smooth = 1.6000;
 Para_align.numIterations_outer = 8;
 Para_align.numIterations_alternate = 16;
 Para_align.numIterations_pairwise = 25;

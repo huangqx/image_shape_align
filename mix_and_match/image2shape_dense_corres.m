@@ -27,6 +27,18 @@ Match = sift_flow_interface(Image.im, renderImage, 0,...
 [renderImage_aligned, pixelPartIds] = deform_image(renderImage,...
     pixelPartIds2, Match);
 
+nf = size(Shape.faceVIds, 2);
+facePartIds = zeros(1, nf);
+nf= 0;
+offs_part = zeros(1, length(Shape.meshes));
+for partId = 1:length(Shape.meshes)
+    mesh = Shape.meshes{partId};
+    nf_mesh = size(mesh.faceVIds, 2);
+    facePartIds((nf+1):(nf+nf_mesh)) = partId;
+    offs_part(partId) = nf;
+    nf = nf + nf_mesh;
+end
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Extract part-wise correspondences
@@ -52,6 +64,11 @@ for partId = 1:numParts
         cols = cols + Match.flow_12_col(pixelIds)';
         pixelIds2 = (cols'-1)*Height + rows';
         Match.partCorres{partId}.meshPoints = meshPoints(:, pixelIds2);
+        fids_global = Match.partCorres{partId}.meshPoints(1,:);
+        partId_local = facePartIds(fids_global);
+
+        Match.partCorres{partId}.meshPoints(1,:) = fids_global...
+            - offs_part(partId_local(1));
         boxes{partId} = [min(cols), min(rows), max(cols), max(rows)];
     end
 end
