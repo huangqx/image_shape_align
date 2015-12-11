@@ -2,7 +2,7 @@ function [renderImage, pixelPartIds, meshPoints] = mm_render_shape(Shape, Camera
 % Assuming that the Shape consists of a set of parts, this function render
 % the shape from the given camera configuration 
 % Render the shape using the camera configuration
-renderImage = i2s_render_shape(Shape, Camera);
+renderImage = cam_render_shape(Shape, Camera);
 % Compute sift flows
 
 % Rectify the camera

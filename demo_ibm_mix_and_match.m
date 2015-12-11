@@ -24,6 +24,7 @@ function [Shape_opt, Camera_opt] = demo_ibm_mix_and_match(...
 % Optimize part-base correspondences between the input image and the input
 % shapes
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ShapeCameras = cell(1, length(Shapes));
 if 1
     % Opt to do image-shape alignment to bring the rendered image close 
     % to the image object (this is always recommended, albeit it takes
@@ -40,6 +41,7 @@ else
 end
 
 % Compute part-wise dense correspondences
+partCorresStructs = cell(1, length(Shapes));
 for i = 1:length(Shapes)
     partCorresStructs{i} = image2shape_dense_corres(Image,...
         Shapes{i}, ShapeCameras{i}, Para); 
@@ -55,5 +57,5 @@ end
 % Refine the part-based reconstruction, so that the refined reconstruction
 % aligns with the input image object
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[Shape_opt, Camera_opt] = part_based_image2shape_align(Image, Camera_init,...
+[Shape_opt, Camera_opt] = image2shape_part_based_align(Image, Camera_init,...
     Shape_init, partCorres, Para);

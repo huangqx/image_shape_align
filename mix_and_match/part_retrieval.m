@@ -7,32 +7,86 @@ function [Shape_init, partCorres] = part_retrieval(Image, Shapes,...
 [M_adj, IDX, setScores, Mask] = part_covering_struct(Image,...
     Shapes, partCorresStructs);
 
-setIds = part_extraction(M_adj, IDX, setScores, Mask, partCorresStructs);
+setIds = part_extraction(M_adj, IDX, setScores, Mask, partCorresStructs,...
+    Para.minCoverRatio, Para.maxOverlapRatio, Para.show_imageRecons);
 
-h = 10;
+% Pre-align the parts
+
+% Combine the retrived parts
+IDX_sub = IDX(setIds, :);
+Shape_init.sym_pairs = [];
+Shape_init.nonsym_ids = [];
+Shape_init.faceVIds = [];
+Shape_init.vertexPoss = [];
+off = 0;
+off_v = 0;
+for i = 1:size(IDX_sub, 1)
+    if IDX_sub(i,2) > 0
+        shapeId = IDX_sub(i, 1);
+        part1Id = IDX_sub(i, 3);
+        part2Id = IDX_sub(i, 4);
+        mesh1 = extract_part(Shapes{shapeId}, part1Id);
+        Shape_init.meshes{off+1}.faceVIds = mesh1.faceVIds;
+        Shape_init.meshes{off+1}.vertexIds = (off_v+1):(off_v+length(mesh1.vertexIds));
+        Shape_init.faceVIds = [Shape_init.faceVIds, mesh1.faceVIds + off_v];
+        Shape_init.vertexPoss = [Shape_init.vertexPoss, mesh1.vertexPoss];
+        off_v = off_v + length(mesh1.vertexIds);
+        
+        mesh2 = extract_part(Shapes{shapeId}, part2Id);
+        Shape_init.meshes{off+2}.faceVIds = mesh2.faceVIds;
+        Shape_init.meshes{off+2}.vertexIds = (off_v+1):(off_v+length(mesh2.vertexIds));
+        Shape_init.faceVIds = [Shape_init.faceVIds, mesh2.faceVIds + off_v];
+        Shape_init.vertexPoss = [Shape_init.vertexPoss, mesh2.vertexPoss];
+        off_v = off_v + length(mesh2.vertexIds);
+        Shape_init.sym_pairs = [Shape_init.sym_pairs,[off+1;off+2]];
+        off = off + 2;
+    else
+        shapeId = IDX_sub(i, 1);
+        partId = IDX_sub(i, 3);
+        mesh = extract_part(Shapes{shapeId}, partId);
+        Shape_init.meshes{off+1}.faceVIds = mesh.faceVIds;
+        Shape_init.meshes{off+1}.vertexIds = (off_v+1):(off_v+length(mesh.vertexIds));
+        Shape_init.faceVIds = [Shape_init.faceVIds, mesh.faceVIds + off_v];
+        Shape_init.vertexPoss = [Shape_init.vertexPoss, mesh.vertexPoss];
+        Shape_init.nonsym_ids = [Shape_init.nonsym_ids, off+1];
+        off = off + 1;
+        off_v = off_v + length(mesh.vertexIds);
+    end
+end
+partCorres = [];
+
 
 % Extract the parts in a greedy fashion
 function [setIds] = part_extraction(M_adj,...
     IDX,...
     setScores,...
     Mask,...
-    partCorresStructs)
+    partCorresStructs,...
+    minCoverRatio,...
+    maxOverlapRatio,...
+    show_imageRecons)
 %
 [Height, Width] = size(Mask);
-img_recons = ones(Height, Width, 3);
-img_mask = zeros(Height, Width);
+if show_imageRecons == 1
+    img_recons_r = ones(Height, Width);
+    img_recons_g = ones(Height, Width);
+    img_recons_b = ones(Height, Width);
+end
 [scores, order] = sort(setScores);
-
+img_mask = zeros(Height, Width);
 setIds = [];
+rgbd = colormap('jet');
+
 for i = 1:length(order)
     id = order(i);
+    c = rgbd(max(1, min(64, floor(64*rand(1,1)))),:);
     if IDX(id, 2) > 0
         shapeId = IDX(id, 1);
         part1Id = IDX(id, 3);
         part2Id = IDX(id, 4);
         tp1 = partCorresStructs{shapeId}.partCorres{part1Id};
         tp2 = partCorresStructs{shapeId}.partCorres{part2Id};
-        if isfield(tp1, 'pixels2') == 0 || isfield(tp2, 'pixels2') == 0
+        if length(tp2.pixels2) == 0 && length(tp2.pixels2) == 0
             continue;
         end
         pixels = [tp1.pixels, tp2.pixels];
@@ -40,12 +94,17 @@ for i = 1:length(order)
         pixels2 = [tp1.pixels2, tp2.pixels2];
         pixels2Id = (pixels2(2,:)-1)*Height + pixels2(1,:);
         ratio = length(pixelsId)/length(pixels2Id);
-        if ratio < 0.75
+        if ratio < minCoverRatio
             continue;
         end
         ratio2 = sum(img_mask(pixels2Id))/length(pixels2Id);
-        if ratio2 > 0.15
+        if ratio2 > maxOverlapRatio
             continue;
+        end
+        if show_imageRecons == 1
+            img_recons_r(pixels2Id) = c(1);
+            img_recons_g(pixels2Id) = c(2);
+            img_recons_b(pixels2Id) = c(3);
         end
         img_mask(pixels2Id) = 1;
         setIds = [setIds, id];
@@ -53,7 +112,7 @@ for i = 1:length(order)
         shapeId = IDX(id, 1);
         part1Id = IDX(id, 3);
         tp1 = partCorresStructs{shapeId}.partCorres{part1Id};
-        if isfield(tp1, 'pixels2') == 0
+        if length(tp1.pixels2) == 0
             continue;
         end
         pixels = tp1.pixels;
@@ -61,18 +120,29 @@ for i = 1:length(order)
         pixels2 = tp1.pixels2;
         pixels2Id = (pixels2(2,:)-1)*Height + pixels2(1,:);
         ratio = length(pixelsId)/length(pixels2Id);
-        if ratio < 0.75
+        if ratio < minCoverRatio
             continue;
         end
         ratio2 = sum(img_mask(pixels2Id))/length(pixels2Id);
-        if ratio2 > 0.15
+        if ratio2 > maxOverlapRatio
             continue;
+        end
+        if show_imageRecons == 1
+            img_recons_r(pixels2Id) = c(1);
+            img_recons_g(pixels2Id) = c(2);
+            img_recons_b(pixels2Id) = c(3);
         end
         img_mask(pixels2Id) = 1;
         setIds = [setIds, id];
     end
 end
-h = 10;
+img_recons = zeros(Height, Width, 3);
+img_recons(:,:,1) = img_recons_r;
+img_recons(:,:,2) = img_recons_g;
+img_recons(:,:,3) = img_recons_b;
+if show_imageRecons == 1
+    imshow(img_recons);
+end
 
 function [M_adj, IDX, setScores, Mask] = part_covering_struct(Image,...
     Shapes, partCorresStructs)
@@ -167,7 +237,7 @@ for shapeId = 1 : length(partCorresStructs)
         tp0 = partCorresStructs{shapeId}.partCorres{partId};
         
         % Set the index table
-        IDX(setId, 1) = i;
+        IDX(setId, 1) = shapeId;
         IDX(setId, 2) = -1;
         IDX(setId, 3) = Shapes{i}.nonsym_ids(j);
         IDX(setId, 4) = 0;
@@ -189,3 +259,8 @@ end
 
 ids = find(setScores == 0);
 setScores(ids) = 1e3;
+
+function [mesh] = extract_part(Shape, partId)
+
+mesh = Shape.meshes{partId};
+mesh.vertexPoss = Shape.vertexPoss(:, mesh.vertexIds);

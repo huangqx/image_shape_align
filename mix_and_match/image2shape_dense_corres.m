@@ -35,12 +35,13 @@ Match = sift_flow_interface(Image.im, renderImage, 0,...
 mask = double(rgb2gray(Image.im) < 240);
 pixelPartIds0 = pixelPartIds.*mask;
 
-numParts = max(max(pixelPartIds));
+numParts = size(Shape.sym_pairs,2)*2 + length(Shape.nonsym_ids);
 [Height, Width] = size(mask);
 for partId = 1:numParts
     [rows, cols, vals] = find(pixelPartIds0 == partId);
     Match.partCorres{partId}.pixels = [];
     Match.partCorres{partId}.meshPoints = [];
+    Match.partCorres{partId}.pixels2 = [];
     boxes{partId} = [];
     if length(rows) > 0
         pixelIds = (cols'-1)*Height + rows';
