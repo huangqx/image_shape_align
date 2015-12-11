@@ -33,20 +33,20 @@ Match = sift_flow_interface(Image.im, renderImage, 0,...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % apply the mask on the source image
 mask = double(rgb2gray(Image.im) < 240);
-pixelPartIds = pixelPartIds.*mask;
+pixelPartIds0 = pixelPartIds.*mask;
 
 numParts = max(max(pixelPartIds));
-validPartId = 0;
 [Height, Width] = size(mask);
 for partId = 1:numParts
-    [rows, cols, vals] = find(pixelPartIds == partId);
+    [rows, cols, vals] = find(pixelPartIds0 == partId);
     Match.partCorres{partId}.pixels = [];
     Match.partCorres{partId}.meshPoints = [];
     boxes{partId} = [];
     if length(rows) > 0
-        validPartId = validPartId + 1;
         pixelIds = (cols'-1)*Height + rows';
         Match.partCorres{partId}.pixels = [rows, cols]';
+        [rows2, cols2, vals] = find(pixelPartIds == partId);
+        Match.partCorres{partId}.pixels2 = [rows2, cols2]';
         rows = rows + Match.flow_12_row(pixelIds)';
         cols = cols + Match.flow_12_col(pixelIds)';
         pixelIds2 = (cols'-1)*Height + rows';
@@ -63,6 +63,7 @@ for partId = 1:numParts
         Match.partCorres{partId}.similarityDist = simiDists(partId);
     end
 end
+Match.renderImage_aligned = renderImage_aligned;
 
 if 0 % used for debugging
     %
@@ -70,7 +71,7 @@ if 0 % used for debugging
     subplot(1,3,1);
     imshow(Image.im);
     subplot(1,3,2);
-    imagesc(pixelPartIds);
+    imagesc(pixelPartIds0);
     daspect([1,1,1]);
     subplot(1,3,3);
     imagesc(pixelPartIds2);

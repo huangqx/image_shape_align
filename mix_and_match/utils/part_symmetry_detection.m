@@ -2,7 +2,7 @@ function [sym_pairs, nonsym_ids] = part_symmetry_detection(Shape)
 % This function detects the symmetry relations among parts (disconnected
 % components)
 % 
-Shape = normalize_shape(Shape);
+Shape = mm_normalize_shape(Shape);
 
 % Compute the coordinate system of each part
 numParts = length(Shape.meshes);
