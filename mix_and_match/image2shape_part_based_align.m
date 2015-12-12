@@ -18,3 +18,4 @@ function [Shape_opt, Camera_opt] = image2shape_part_based_align(...
 Shape_opt = Shape_init;
 Camera_opt = Camera_init;
 
+% Perform non-rigid alignment to bring the shape and image closer
