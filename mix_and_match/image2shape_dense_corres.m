@@ -27,6 +27,11 @@ Match = sift_flow_interface(Image.im, renderImage, 0,...
 [renderImage_aligned, pixelPartIds] = deform_image(renderImage,...
     pixelPartIds2, Match);
 
+if 1
+    tp = (im2double(renderImage_aligned) + im2double(Image.im))/2;
+    imshow(tp);
+end
+
 nf = size(Shape.faceVIds, 2);
 facePartIds = zeros(1, nf);
 nf= 0;

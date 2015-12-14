@@ -50,6 +50,7 @@ for i = 1:size(IDX_sub, 1)
         part1Id = IDX_sub(i, 3);
         part2Id = IDX_sub(i, 4);
         mesh1 = extract_part(Shapes{shapeId}, part1Id);
+        Shape_init.meshes{off+1}.mat = mesh1.mat;
         Shape_init.meshes{off+1}.faceVIds = mesh1.faceVIds;
         Shape_init.meshes{off+1}.vertexIds = (off_v+1):(off_v+length(mesh1.vertexIds));
         partCorres{off+1}.pixels = partCorresStructs{shapeId}.partCorres{part1Id}.pixels;
@@ -59,6 +60,7 @@ for i = 1:size(IDX_sub, 1)
         off_v = off_v + length(mesh1.vertexIds);
         
         mesh2 = extract_part(Shapes{shapeId}, part2Id);
+        Shape_init.meshes{off+2}.mat = mesh2.mat;
         Shape_init.meshes{off+2}.faceVIds = mesh2.faceVIds;
         Shape_init.meshes{off+2}.vertexIds = (off_v+1):(off_v+length(mesh2.vertexIds));
         partCorres{off+2}.pixels = partCorresStructs{shapeId}.partCorres{part2Id}.pixels;
@@ -74,6 +76,7 @@ for i = 1:size(IDX_sub, 1)
         shapeId = IDX_sub(i, 1);
         partId = IDX_sub(i, 3);
         mesh = extract_part(Shapes{shapeId}, partId);
+        Shape_init.meshes{off+1}.mat = mesh.mat;
         Shape_init.meshes{off+1}.faceVIds = mesh.faceVIds;
         Shape_init.meshes{off+1}.vertexIds = (off_v+1):(off_v+length(mesh.vertexIds));
         partCorres{off+1}.pixels = partCorresStructs{shapeId}.partCorres{partId}.pixels;
@@ -85,6 +88,7 @@ for i = 1:size(IDX_sub, 1)
         off = off + 1;
     end
 end
+Shape_init.has_material = 1;
 
 % Extract the parts in a greedy fashion
 function [setIds] = part_extraction(M_adj,...

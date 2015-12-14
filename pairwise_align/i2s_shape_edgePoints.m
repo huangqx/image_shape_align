@@ -21,6 +21,7 @@ axis_x = cross(axis_y, axis_z);
 render_image = i2s_render_shape(Shape, Camera);
 edgeMap = edgesDetect(render_image, Para.model_contour);
 edgeMap(find(edgeMap < 0.25)) = 0;
+edgeMap(find(edgeMap > 0.25)) = 1;
 [rows, cols, vals] = find(edgeMap);
 numEdgePoints = length(rows);
 
