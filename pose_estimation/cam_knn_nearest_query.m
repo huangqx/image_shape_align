@@ -1,4 +1,4 @@
-function [Shapes_knn] = cam_nearest_query(Image, Camera, shape_folder, knn)
+function [knnIds] = cam_knn_nearest_query(Image, Camera, Shapes, knn)
 % This function finds the nearest neighbors of an image object among a
 % collection of shapes stored in a shape folder. The shapes are assumed to
 % be consistently oriented and scaled.
@@ -11,7 +11,7 @@ function [Shapes_knn] = cam_nearest_query(Image, Camera, shape_folder, knn)
 %                 (the default setting in pose estimation) 
 %   knn: the number of nearest-neighbors for a given image object
 % Output argument:
-%   Shapes_knn: the retrieved nearest neighbors
+%   knnIds: indices of the retrieved nearest neighbors
 
 patch = imResample(single(Image.im), [400, 400])/255;
 H = hog(patch, 100, 16);
@@ -24,28 +24,20 @@ shapes_hog = single(zeros(1024, numShapes));
 
 
 for shapeId = 1 : numShapes
-    shapes_hog(:, shapeId) = hos_process(shape_folder, temp, Camera, shapeId);
+    shapes_hog(:, shapeId) = hos_process(Shapes{shapeId}, Camera);
     fprintf('%d\n', shapeId);
 end
 
 
 d = query_hog*ones(1, numShapes) - shapes_hog;
 [s, ids] = sort(sum(d.*d));
-ids = ids(1:knn);
+knnIds = ids(1:knn);
 
-for i = 1:knn
-    shapeId = ids(i);
-    load([shape_folder, temp(shapeId+2).name]);
-    Shape.has_material = 1;
-    Shapes_knn{i} = Shape;
-    images{i} = cam_render_shape(Shape, Camera);
-end
 
-function [H] = hos_process(shape_folder, temp, Camera, shapeId)
+function [H] = hos_process(Shape, Camera)
 
-load([shape_folder, temp(shapeId+2).name]);
 Shape.has_material = 1;
 image = cam_render_shape(Shape, Camera);
-patch = imResample(single(image), [360, 360])/255;
-H = hog(patch, 60, 16);
-H = reshape(H, [2304, 1]);
+patch = imResample(single(image), [400, 400])/255;
+H = hog(patch, 100, 16);
+H = reshape(H, [1024, 1]);
