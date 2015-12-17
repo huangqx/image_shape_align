@@ -1,5 +1,5 @@
-function [Corres_rr, Corres_rs] = demo_joint_i2s_corres_main(...
-    Images, ImageCameras, Shapes, Adj_rr, Adj_rs, Para)
+function [Corres_rs] = demo_joint_i2s_corres_main(...
+    Images, ImageCameras, Shapes, Adj_rs, Para)
 % Thie function establishes dense correspondences among a collection of
 % real images and natural images
 % Input arguments:
@@ -7,43 +7,64 @@ function [Corres_rr, Corres_rs] = demo_joint_i2s_corres_main(...
 %            please scale them properly
 %    ImageCameras: the associated camera configuration
 %    Shapes: input shapes
-%    Adj_rr: the sparse matrix that specifies the pairs of images that we
-%            want to compute dense correspondences
 %    Adj_rs: the sparse matrix that specifies the pairs of image-shapes
 %            that we want to compute dense correspondences
 %    Para:   please refer to software document on how to change default
 %            parameters
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Output arguments:
 %    Corres_rr: the dense correspondences between pairs of images
 %    Corres_rs: the dense correspondences between images and shapes
 %
-Clusters = jis_view_clustering(ImageCameras, Para.directDis);
+Clusters = jis_view_clustering(ImageCameras,...
+    Para.viewDirectRadius_image_clustering);
+%
+fprintf('There are %d clusters.\n', length(Clusters));
 %
 for cId = 1:length(Clusters)
-    camera = Clusters{cId}.camera;
+    fprintf(' processing cluster %d...\n', cId);
+    Camera = Clusters{cId}.Camera;
     imageIds = Clusters{cId}.imageIds;
     %
     numShapes = length(Shapes);
-    for id = 1 : numShapes
-        [meshPoints, renderImage] = ray_tracing(Shapes{id}, camera);
-        images{id} = renderImage;
-        scans{id} = meshPoints;
+
+    for id = 1 : length(imageIds)
+        Clusters{cId}.images{id} = Images{imageIds(id)}.im;
     end
-    
+    for id = 1 : numShapes
+        [meshPoints, renderImage] = co_ray_tracing(Shapes{id}, Camera);
+        Clusters{cId}.images{length(imageIds) + id} = renderImage;
+        Clusters{cId}.scans{id} = meshPoints;
+    end
+    % Compute correspondences among the rendered and the natural images
+    [Clusters{cId}.ffds, Clusters{cId}.hogDess] =...
+        dense_multi_image_corres(Clusters{cId}.images, Para);
 end
 
-function [meshPoints, renderImage] = ray_tracing(Shape, Camera)
+numImages = length(Images);
+imageClusIds = zeros(2, numImages);
+for cId = 1 : length(Clusters)
+    imageClusIds(1, Clusters{cId}.imageIds) = cId;
+    imageClusIds(2, Clusters{cId}.imageIds) =...
+        1:length(Clusters{cId}.imageIds);
+end
 
-renderImage = cam_render_shape(Shape, Camera);
-[Height, Width, k] = size(renderImage);
-cols = kron(1:Width, ones(1, Height));
-rows = kron(ones(1, Width), 1:Height);
+[imIds, shapeIds, vals] = find(Adj_rs);
 
-coordX = ((2*cols-1) - Width)/min(Height, Width);
-coordY = (Height - (2*rows-1))/min(Height, Width);
-points = axis_x*coordX'*Camera.scale + axis_y*coordY'*Camera.scale +...
-    Camera.lookAt*ones(1, numEdgePoints);
+Corres_rs = cell(1, length(imIds));
+for id = 1:length(imIds)
+    Corres_rs{id}.imageId = imIds(id);
+    Corres_rs{id}.shapeId = shapeIds(id);
+    cId = imageClusIds(1, imIds(id));
+    im_cId = imageClusIds(2, imIds(id));
+    Corres_rs{id}.corres = establish_2d_3d_corres(...
+        Clusters{cId}.ffds{im_cId},...
+        Clusters{cId}.ffds{shapeIds(id)+length(Clusters{cId}.imageIds)},...
+        Clusters{cId}.scans{shapeIds(id)});
+end
 
-meshPoints = unproject(double(Shape.vertexPoss), double(Shape.faceVIds),...
-    Camera.origin, points);
+

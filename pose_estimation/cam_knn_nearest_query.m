@@ -17,8 +17,7 @@ patch = imResample(single(Image.im), [400, 400])/255;
 H = hog(patch, 100, 16);
 query_hog = reshape(H, [1024, 1]);
 
-temp = dir(shape_folder);
-numShapes = length(temp)-2;
+numShapes = length(Shapes);
 
 shapes_hog = single(zeros(1024, numShapes));
 
