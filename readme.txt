@@ -127,6 +127,11 @@ Demo:
   Warning: If you use >100 images and/or >100 shapes,
            the computation may take a very long time.
 
+  Demo:
+    >load('data\joint_matching.mat');
+    >load('data\parameters.mat');
+    >Corres_rs = demo_joint_i2s_corres_main(Images(1:10), ImageCameras(1:10), Shapes(1:5), ones(10,5), Para);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % External libraries
