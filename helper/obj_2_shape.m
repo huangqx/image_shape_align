@@ -24,10 +24,11 @@ for i = 1:length(Shape.meshes)
         objMesh.vertexPoss(:, mesh.vertexIds);
     Shape.faceVIds(:, (nf+1):(nf+nf_mesh)) =...
         mesh.faceVIds + nv;
+    Shape.meshes{i}.vertexIds = (nv+1):(nv+nv_mesh);
     nv = nv + nv_mesh;
     nf = nf + nf_mesh;
 end
-Shape.has_material = 0;
+Shape.has_material = 1;
 
 function [meshes] = parts_from_shape(Shape, err)
 %

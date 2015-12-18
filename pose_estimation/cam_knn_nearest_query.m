@@ -13,18 +13,20 @@ function [knnIds] = cam_knn_nearest_query(Image, Camera, Shapes, knn)
 % Output argument:
 %   knnIds: indices of the retrieved nearest neighbors
 
-patch = imResample(single(Image.im), [400, 400])/255;
-H = hog(patch, 100, 16);
-query_hog = reshape(H, [1024, 1]);
+patch = imResample(single(Image.im), [360, 360])/255;
+H = hog(patch, 60, 16);
+query_hog = reshape(H, [2304, 1]);
 
 numShapes = length(Shapes);
 
-shapes_hog = single(zeros(1024, numShapes));
+shapes_hog = single(zeros(2304, numShapes));
 
 
 for shapeId = 1 : numShapes
     shapes_hog(:, shapeId) = hos_process(Shapes{shapeId}, Camera);
-    fprintf('%d\n', shapeId);
+    if mod(shapeId, 100) == 0
+        fprintf('%d\n', shapeId);
+    end
 end
 
 
@@ -37,6 +39,6 @@ function [H] = hos_process(Shape, Camera)
 
 Shape.has_material = 1;
 image = cam_render_shape(Shape, Camera);
-patch = imResample(single(image), [400, 400])/255;
-H = hog(patch, 100, 16);
-H = reshape(H, [1024, 1]);
+patch = imResample(single(image), [360, 360])/255;
+H = hog(patch, 60, 16);
+H = reshape(H, [2304, 1]);

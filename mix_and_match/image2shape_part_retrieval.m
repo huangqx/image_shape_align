@@ -175,6 +175,7 @@ img_recons(:,:,1) = img_recons_r;
 img_recons(:,:,2) = img_recons_g;
 img_recons(:,:,3) = img_recons_b;
 if show_imageRecons == 1
+    figure(2);
     imshow(img_recons);
 end
 
@@ -273,7 +274,7 @@ for shapeId = 1 : length(partCorresStructs)
         % Set the index table
         IDX(setId, 1) = shapeId;
         IDX(setId, 2) = -1;
-        IDX(setId, 3) = Shapes{i}.nonsym_ids(j);
+        IDX(setId, 3) = Shapes{shapeId}.nonsym_ids(j);
         IDX(setId, 4) = 0;
         %
         pixels = tp0.pixels;

@@ -1,4 +1,4 @@
-﻿%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % License and attribution:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -79,6 +79,11 @@ ACM Transactions on Graphics 34(4), 2015
                 image object
   'Camera_opt': The associated optimized camera configuration
 
+Demo:
+   >load('data\chair.mat');
+   >load('data\parameters.mat');
+   >[Camera_opt, Shape_opt] = demo_i2s_align(Images{1}, Shapes, Para);
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Module III: Assembly-based reconstruction
@@ -98,6 +103,10 @@ ACM Transactions on Graphics 34(4), 2015
                   system
     'Camera_opt': The associated optimized camera configuration
 
+Demo:
+   >load('data\mix_and_match.mat');
+   >load('data\parameters.mat');
+   >[Shape_opt, Camera_opt] = demo_ibm_mix_and_match(Image, Camera_init, Shapes, Para);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Module IV: Joint image-shape correspondence
@@ -144,7 +153,7 @@ References:
 
 Navneet Dalal, Bill Triggs: Histograms of Oriented Gradients for Human Detection. CVPR 2005
 
-Piotr Dollár, C. Lawrence Zitnick: Fast Edge Detection Using Structured Forests. IEEE Trans. Pattern Anal. Mach. Intell. 37(8): 1558-1570 (2015)
+Piotr Doll�r, C. Lawrence Zitnick: Fast Edge Detection Using Structured Forests. IEEE Trans. Pattern Anal. Mach. Intell. 37(8): 1558-1570 (2015)
 
 Ce Liu, Jenny Yuen, Antonio Torralba: SIFT Flow: Dense Correspondence across Scenes and Its Applications. IEEE Trans. Pattern Anal. Mach. Intell. 33(5): 978-994 (2011)
 

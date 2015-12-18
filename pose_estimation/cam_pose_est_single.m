@@ -100,7 +100,7 @@ Camera.scale = Camera.scale*(s2/s1);
 if verbose == 1
     im2 = cam_render_shape(Shapes{closetShapeId}, Camera);
     [im] = stitch_image(Image.im, im2);
-    figure(1);
+    figure(2);
     imshow(im);
 end
 
