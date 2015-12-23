@@ -28,7 +28,7 @@ shapeDefmScore = eval_distortion(points_augmented,...
     points_augmented_deform);
 
 numV = size(Shape.vertexPoss, 2);
-[IDX, dis] = knnsearch(points_augmented',points_augmented(:, 1:numV)', 'k', knn);
+IDX = knnsearch(points_augmented',points_augmented(:, 1:numV)', 'k', knn);
 
 verDefmScores = zeros(1, numV);
 for vId = 1 : numV
