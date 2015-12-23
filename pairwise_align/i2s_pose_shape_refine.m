@@ -1,4 +1,4 @@
-function [Camera_opt, Shape_opt] = i2s_pose_shape_refine(...
+function [Camera_opt, Shape_opt, FFD_opt] = i2s_pose_shape_refine(...
     Image, Shape_in, Camera_in, Para)
 % Image: the pascal3d image to be aligned
 % Shape: the template surface
@@ -94,6 +94,7 @@ for iter = 1:Para.numIterations
     end
 end
 
+FFD_opt = Shape_in.FFD;
 
 if 1 % Used for debugging
     hFig = figure(2);

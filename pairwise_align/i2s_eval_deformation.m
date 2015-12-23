@@ -28,7 +28,7 @@ shapeDefmScore = eval_distortion(points_augmented,...
     points_augmented_deform);
 
 numV = size(Shape.vertexPoss, 2);
-[IDX, dis] = knnsearch(points_augmented',points_augmented', knn);
+[IDX, dis] = knnsearch(points_augmented',points_augmented(:, 1:numV)', 'k', knn);
 
 verDefmScores = zeros(1, numV);
 for vId = 1 : numV
@@ -43,7 +43,7 @@ function [distortion] = eval_distortion(points_ori, points_deformed)
 numP = size(points_ori, 2);
 [R, t] = horn87(points_ori, points_deformed, ones(1, numP));
 d = R*points_ori + t*ones(1, numP) - points_deformed;
-distortion = sqrt(sum(d.*d)/numP);
+distortion = sqrt(sum(sum(d.*d))/numP);
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
