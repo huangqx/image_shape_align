@@ -100,3 +100,4 @@ else
     [image, map] = frame2im(F);
     close(hFig);
 end
+image = imresize(image, [Camera.nHeight_inner, Camera.nWidth_inner]);

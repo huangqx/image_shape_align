@@ -2,7 +2,8 @@ function [Corres] = i2s_nn_query_pruned(...
     targetPC_2D,...
     sourcePC_2D,...
     minSigmaCorres,...
-    lambda_saliency)
+    lambda_saliency,...
+    reweight_corres)
 % the third dimension of the sourcePC_2D and targetPC_2D describe the
 % saliency information of the point clouds (derived from the edgeDetect)
 % argument 'lambda_saliency' is used to scale this coordinate
@@ -17,8 +18,16 @@ targetPC_2D(3,:) = targetPC_2D(3,:)*lambda_saliency;
 
 sigma = max(minSigmaCorres, median(d_s_in_t));
 fprintf('sigma = %f.\n', sigma);
+
 w_s_in_t = sigma^2./(d_s_in_t'.^2 + sigma^2);
 w_t_in_s = sigma^2./(d_t_in_s'.^2 + sigma^2);
+
+if reweight_corres == 0
+    % Set the correspondence weights to be one
+    w_s_in_t = max(w_s_in_t, 1);
+    w_t_in_s = max(w_t_in_s, 1);
+    sigma = 1e10;
+end
 
 ids_s_in_t = find(d_s_in_t < 4*sigma);
 ids_t_in_s = find(d_t_in_s < 4*sigma);
